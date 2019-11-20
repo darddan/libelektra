@@ -2,6 +2,70 @@
 #include "base.hpp"
 #include "kconfig_parser_exception.hpp"
 
+// True if this is a single byte utf8 character
+inline bool isFirstByteOfSingleByte (unsigned char const c)
+{
+	return !(c & 0x80);
+}
+
+// True if this is the second byte of a double byte utf8 character
+inline bool isSecondByteOfDoubleByte (unsigned char const c)
+{
+	return (c & 0xE0) == 0xC0;
+}
+
+// True if this is the third byte of a three byte utf8 character
+inline bool isThirdByteOfTrippleByte (unsigned char const c)
+{
+	return (c & 0xF0) == 0xE0;
+}
+
+// Skips a utf8 character independent of its byte length
+void skipUtf8Char (std::ifstream & input)
+{
+	unsigned char c = input.get ();
+	if (isFirstByteOfSingleByte (c))
+	{
+		return;
+	}
+	c = input.get ();
+	if (isSecondByteOfDoubleByte (c))
+	{
+		return;
+	}
+	c = input.get ();
+	if (isThirdByteOfTrippleByte (c))
+	{
+		return;
+	}
+	input.get ();
+}
+
+// saves a utf8 character into output independent of its byte length
+void readUtf8Char (std::ifstream & input, std::ostream & output)
+{
+	unsigned char c = input.get ();
+	output << c;
+	if (isFirstByteOfSingleByte (c))
+	{
+		return;
+	}
+	c = input.get ();
+	output << c;
+	if (isSecondByteOfDoubleByte (c))
+	{
+		return;
+	}
+	c = input.get ();
+	output << c;
+	if (isThirdByteOfTrippleByte (c))
+	{
+		return;
+	}
+	c = input.get ();
+	output << c;
+}
+
 FileUtility::FileUtility (const std::string & filenameParam)
 : file{ filenameParam }, stringBuffer{}, currentLine{ 1 }, filename{ filenameParam }
 {
@@ -52,7 +116,7 @@ bool FileUtility::isNextCharToken ()
 
 void FileUtility::skipChar ()
 {
-	(this->file).get ();
+	skipUtf8Char (this->file);
 }
 
 void FileUtility::skipCharsIfBlank ()
@@ -68,17 +132,19 @@ void FileUtility::skipLine ()
 	++currentLine;
 	while (true)
 	{
-		switch ((this->file).get ())
+		switch ((this->file).peek ())
 		{
 		case character_newline:
+			skipChar ();
 			return;
 		case character_carriage_return:
+			skipChar ();
 			if (peekNextChar () == character_newline) skipChar ();
 			return;
 		case EOF:
-			// Not sure if the following line is needed
-			// (this->file).putback (EOF);
 			return;
+		default:
+			skipChar ();
 		}
 	}
 }
@@ -105,13 +171,12 @@ void FileUtility::readUntilChar (std::ostream & str, const char & delimiter)
 	char c;
 	while (true)
 	{
-		c = this->file.get ();
+		c = this->file.peek ();
 		if (c == EOF || c == character_newline || c == character_carriage_return || c == delimiter)
 		{
-			this->file.putback (c);
 			break;
 		}
-		str << c;
+		readUtf8Char (this->file, str);
 	}
 }
 
