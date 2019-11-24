@@ -34,7 +34,8 @@ Item {
 		iconSource: "icons/document-new.png"
 		iconName: Helper.useIcon("document-new")
 		tooltip: qsTr("New Key")
-		enabled: treeView.currentItem !== null && !toggleViewerAction.checked
+		// TODO: Dardan
+		enabled: treeView.currentIndex !== null && !toggleViewerAction.checked
 
 		onTriggered: {
 
@@ -108,7 +109,7 @@ Item {
 		iconSource: "icons/export.png"
 		iconName: Helper.useIcon("document-export")
 		tooltip: qsTr("Export Configuration")
-		enabled: treeView.currentItem !== null && !toggleViewerAction.checked
+		enabled: treeView.currentIndex !== null && !toggleViewerAction.checked
 		onTriggered: {
 			exportDialog.nameFilters = guiBackend.nameFilters()
 			exportDialog.open()
@@ -127,11 +128,11 @@ Item {
 		onTriggered: {
 			if(undoManager.undoText === "deleteBranch"){
 				undoManager.undo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.undoText === "deleteKey"){
 				undoManager.undo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.undoText === "deleteSearchResultsKey" || undoManager.undoText === "deleteSearchResultsBranch"){
 				undoManager.undo()
@@ -139,19 +140,19 @@ Item {
 			}
 			else if(undoManager.undoText === "copyBranch"){
 				undoManager.undo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.undoText === "cutBranch"){
 				undoManager.undo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.undoText === "import"){
 				undoManager.undo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.undoText === "newBranch"){
 				undoManager.undo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 				keyAreaView.selection.clear()
 			}
 			else if(undoManager.undoText === "newKey"){
@@ -181,7 +182,7 @@ Item {
 			for(var i = undoManager.index(); i > undoManager.cleanIndex(); i--)
 				undoAction.trigger()
 
-			treeView.treeModel.refresh()
+			treeView.model.refresh()
 		}
 	}
 
@@ -197,11 +198,11 @@ Item {
 		onTriggered: {
 			if(undoManager.redoText === "deleteBranch"){
 				undoManager.redo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.redoText === "deleteKey"){
 				undoManager.redo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.redoText === "deleteSearchResultsKey" || undoManager.redoText === "deleteSearchResultsBranch"){
 				undoManager.redo()
@@ -209,19 +210,19 @@ Item {
 			}
 			else if(undoManager.redoText === "copyBranch"){
 				undoManager.redo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.redoText === "cutBranch"){
 				undoManager.redo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.redoText === "import"){
 				undoManager.redo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else if(undoManager.redoText === "newBranch"){
 				undoManager.redo()
-				treeView.treeModel.refresh()
+				treeView.model.refresh()
 			}
 			else{
 				undoManager.redo()
@@ -244,7 +245,7 @@ Item {
 			for(var i = undoManager.index(); i < undoManager.count(); i++)
 				redoAction.trigger()
 
-			treeView.treeModel.refresh()
+			treeView.model.refresh()
 		}
 	}
 
@@ -258,9 +259,9 @@ Item {
 		shortcut: StandardKey.Refresh
 		enabled: !toggleViewerAction.checked
 		onTriggered: {
-			treeView.treeModel.synchronize()
+//			treeView.model.synchronize()
 			undoManager.setClean()
-			treeView.treeModel.refresh()
+			treeView.model.refresh()
 		}
 	}
 
@@ -287,7 +288,7 @@ Item {
 		tooltip: qsTr("Unmount Backend")
 		enabled: !toggleViewerAction.checked
 		onTriggered: {
-			unmountBackendWindow.mountedBackendsView.model = treeView.treeModel.mountedBackends()
+			unmountBackendWindow.mountedBackendsView.model = treeView.model.mountedBackends()
 			unmountBackendWindow.mountedBackendsView.currentIndex = -1
 			unmountBackendWindow.show()
 		}
@@ -300,7 +301,7 @@ Item {
 		iconName: Helper.useIcon("edit-rename")
 		text: qsTr("Edit ...")
 		tooltip: qsTr("Edit")
-		enabled: !(treeView.currentNode === null && keyAreaSelectedItem === null && searchResultsSelectedItem === null) && !toggleViewerAction.checked
+		enabled: !(treeView.currentIndex === null && keyAreaSelectedItem === null && searchResultsSelectedItem === null) && !toggleViewerAction.checked
 
 		onTriggered: {
 			if(editKeyWindow.accessFromSearchResults){
@@ -319,12 +320,12 @@ Item {
 		text: qsTr("Cut")
 		tooltip: qsTr("Cut")
 		shortcut: StandardKey.Cut
-		enabled: !(treeView.currentNode === null && keyAreaSelectedItem === null) && !toggleViewerAction.checked
+		enabled: !(treeView.currentIndex === null && keyAreaSelectedItem === null) && !toggleViewerAction.checked
 
 		onTriggered: {
-			if(treeView.currentNode !== null && keyAreaSelectedItem === null)
+			if(treeView.currentIndex !== null && keyAreaSelectedItem === null)
 				MFunctions.cutBranch()
-			else if(treeView.currentNode !== null && keyAreaSelectedItem !== null)
+			else if(treeView.currentIndex !== null && keyAreaSelectedItem !== null)
 				MFunctions.cutKey()
 		}
 	}
@@ -337,12 +338,12 @@ Item {
 		text: qsTr("Copy")
 		tooltip: qsTr("Copy")
 		shortcut: StandardKey.Copy
-		enabled: !(treeView.currentNode === null && keyAreaSelectedItem === null) && !toggleViewerAction.checked
+		enabled: !(treeView.currentIndex === null && keyAreaSelectedItem === null) && !toggleViewerAction.checked
 
 		onTriggered: {
-			if(treeView.currentNode !== null && keyAreaSelectedItem === null)
+			if(treeView.currentIndex !== null && keyAreaSelectedItem === null)
 				MFunctions.copyBranch()
-			else if(treeView.currentNode !== null && keyAreaSelectedItem !== null)
+			else if(treeView.currentIndex !== null && keyAreaSelectedItem !== null)
 				MFunctions.copyKey()
 		}
 	}

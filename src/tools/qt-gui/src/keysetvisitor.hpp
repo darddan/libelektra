@@ -16,7 +16,6 @@
 /**
  * @brief The KeySetVisitor class. It visits every existing ConfigNode and collects the encapsuled key, if it exists.
  */
-
 class KeySetVisitor : public Visitor
 {
 public:
@@ -27,6 +26,8 @@ public:
 
 	void visit (ConfigNode & node) override;
 	void visit (TreeViewModel * model) override;
+	void visit (TreeItem & item) override;
+	void visit (TreeModel * model) override;
 
 	/**
 	 * @brief getKeySet Returns the kdb::KeySet with all current valid keys

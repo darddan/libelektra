@@ -299,16 +299,23 @@ QString GUIBackend::pluginType (QString plugin) const
 
 QStringList GUIBackend::nameFilters ()
 {
-	QStringList nFilters;
 	QStringList plugins = availablePlugins (true, false);
+	QStringList nFilters;
 
-	plugins = plugins.filter ("[storage]");
-	plugins.replaceInStrings (QRegExp ("\\s\\[\\w*\\]"), "");
-
-	foreach (QString plugin, plugins)
+	for (QString plugin : plugins)
 	{
-		QString pattern = "*";
-		nFilters.append (QString ("%1 (%2)").arg (plugin, pattern));
+		QStringList tmp{ plugin.split ('[') };
+		if (tmp.size () < 2)
+		{
+			continue;
+		}
+
+		if (tmp.at (1).contains ("storage"))
+		{
+			QString pluginName{ plugin.split ('[').at (0) };
+			QString pattern = "*";
+			nFilters.append (QString ("%1 (%2)").arg (pluginName, pattern));
+		}
 	}
 
 	nFilters.sort ();

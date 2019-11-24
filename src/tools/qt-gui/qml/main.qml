@@ -1,5 +1,5 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.1
+import QtQuick 2.11
+import QtQuick.Controls 1.4
 import QtQuick.Window 2.0
 import QtQuick.Controls.Styles 1.1
 import QtQuick.Layouts 1.1
@@ -56,13 +56,13 @@ ApplicationWindow {
 
 	//Set up slots to catch signals from objects
 	Connections {
-		target: treeView.treeModel
+		target: treeView.model
 
 		onShowMessage: {
 			ErrorDialog.showMessage(title, text, detailedText)
 		}
 		onUpdateIndicator: {
-			treeView.updateIndicator()
+			treeView.model.updateIndicator()
 		}
 	}
 
@@ -74,27 +74,28 @@ ApplicationWindow {
 		}
 	}
 
-	Connections {
-		target: treeView.currentNode === null ? null : treeView.currentNode.parentModel
-
-		onShowMessage: {
-			ErrorDialog.showMessage(title, text, detailedText)
-		}
-		onUpdateIndicator: {
-			treeView.updateIndicator()
-		}
-	}
-
-	Connections {
-		target: treeView.currentNode === null ? null : treeView.currentNode.children
-
-		onShowMessage: {
-			ErrorDialog.showMessage(title, text, detailedText)
-		}
-		onUpdateIndicator: {
-			treeView.updateIndicator()
-		}
-	}
+//	TODO: Dardan
+//	Connections {
+//		target: treeView.currentNode === null ? null : treeView.currentNode.parentModel
+//
+//		onShowMessage: {
+//			ErrorDialog.showMessage(title, text, detailedText)
+//		}
+//		onUpdateIndicator: {
+//			treeView.updateIndicator()
+//		}
+//	}
+//
+//	Connections {
+//		target: treeView.currentNode === null ? null : treeView.currentNode.children
+//
+//		onShowMessage: {
+//			ErrorDialog.showMessage(title, text, detailedText)
+//		}
+//		onUpdateIndicator: {
+//			treeView.updateIndicator()
+//		}
+//	}
 
 	//**Colors*************************************************************************************************//
 
@@ -291,8 +292,23 @@ ApplicationWindow {
 
 			TreeView {
 				id: treeView
+				anchors.fill: parent
+				model: treeModelDup
 
-				treeModel: externTreeModel
+        		itemDelegate: Item {
+        			Text {
+						anchors.fill: parent
+						color: styleData.textColor
+						elide: styleData.elideMode
+        				text: styleData.value
+        			}
+        		}
+
+				TableViewColumn {
+					role: "name"
+					title: "Keys"
+				}
+
 			}
 			HelpArea {
 				helpText: qsTr("This is a tree view of the Key Database. It shows\nthe entire tree of the Key Database and allows\nyou to traverse the keys.")
@@ -323,16 +339,16 @@ ApplicationWindow {
 					alternatingRowColors: false
 					backgroundVisible: false
 
-//					Component.onCompleted: treeView.updateIndicator.connect(updateModel)
+					Component.onCompleted: treeView.model.updateIndicator.connect(updateModel)
 
-//					onUpdateModel: model = getModel()
+					onUpdateModel: model = getModel()
 
 					model: getModel()
 
 					function getModel() {
 						if (treeView.currentNode === null)
 							return null
-						else if (treeView.currentNode.childrenHaveNoChildren)
+						else if (treeView.currentIndex.childrenHaveNoChildren)
 							return treeView.currentNode.children
 					}
 
@@ -362,8 +378,8 @@ ApplicationWindow {
 							anchors.fill: parent
 							anchors.leftMargin: defaultMargins
 							anchors.verticalCenter: parent.verticalCenter
-							text: (treeView.currentNode === null || styleData.value === undefined) ? "" : styleData.value.replace(/\n/g, " ")
-							color: treeView.currentNode === null ? "transparent" : ((keyAreaView.keyAreaCopyIndex === styleData.row &&
+							text: (treeView.currentIndex === null || styleData.value === undefined) ? "" : styleData.value.replace(/\n/g, " ")
+							color: treeView.currentIndex === null ? "transparent" : ((keyAreaView.keyAreaCopyIndex === styleData.row &&
 																					 treeView.currentNode.path === keyAreaView.currentNodePath &&
 																					 keyAreaSelectedItem !== null) ? disabledPalette.text : (guiSettings !== null ? guiSettings.nodeWithKeyColor : activePalette.text))
 						}
@@ -600,8 +616,8 @@ ApplicationWindow {
 				id: path
 				Layout.fillHeight: true
 				Layout.fillWidth: true
-                                Layout.leftMargin : defaultMargins
-				text: treeView.currentNode === null ? "" : treeView.currentNode.path + (keyAreaSelectedItem === null ? "" : "/" + keyAreaSelectedItem.name)
+                Layout.leftMargin : defaultMargins
+            	text: treeView.currentIndex === null ? "" : treeView.currentIndex.path + (keyAreaSelectedItem === null ? "" : "/" + keyAreaSelectedItem.name)
 			}
 		}
 	}

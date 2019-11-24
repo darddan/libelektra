@@ -11,6 +11,9 @@
 
 #include "visitor.hpp"
 
+class TreeItem;
+class TreeModel;
+
 /**
  * @brief The PrintVisitor class
  */
@@ -28,6 +31,17 @@ public:
 	 * @param model
 	 */
 	void visit (TreeViewModel * model) override;
+	/**
+	 * @brief visit
+	 * @param node
+	 */
+	void visit (TreeItem & item) override;
+
+	/**
+	 * @brief visit
+	 * @param model
+	 */
+	void visit (TreeModel * model) override;
 };
 
 #endif // PRINTVISITOR_HPP

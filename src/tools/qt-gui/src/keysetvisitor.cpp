@@ -8,6 +8,7 @@
 
 #include "keysetvisitor.hpp"
 #include "treeviewmodel.hpp"
+#include "treemodel.hpp"
 
 using namespace kdb;
 
@@ -27,9 +28,25 @@ void KeySetVisitor::visit (ConfigNode & node)
 
 void KeySetVisitor::visit (TreeViewModel * model)
 {
-	foreach (ConfigNodePtr node, model->model ())
-	{
-		node->accept (*this);
+		foreach (ConfigNodePtr node, model->model ())
+		{
+			node->accept (*this);
+		}
+}
+
+void KeySetVisitor::visit(TreeItem& item) {
+	Key key = item.key ();
+
+	if (key && key.isValid ()) {
+		m_set.append (key);
+	}
+}
+
+void KeySetVisitor::visit (TreeModel * model)
+{
+	TreeItem* item = model -> root();
+	for (int i = 0; i < item->childCount (); i++) {
+		item->child (i)->accept (*this);
 	}
 }
 

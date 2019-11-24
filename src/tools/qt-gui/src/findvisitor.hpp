@@ -29,6 +29,8 @@ public:
 
 	void visit (ConfigNode & node) override;
 	void visit (TreeViewModel * model) override;
+	void visit (TreeItem & item) override;
+	void visit (TreeModel * model) override;
 
 private:
 	TreeViewModel * m_searchResults;

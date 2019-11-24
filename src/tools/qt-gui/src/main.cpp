@@ -24,6 +24,7 @@
 #include "guibackend.hpp"
 #include "guisettings.hpp"
 #include "treeviewmodel.hpp"
+#include "treemodel.hpp"
 #include "undomanager.hpp"
 
 int main (int argc, char * argv[])
@@ -55,28 +56,30 @@ int main (int argc, char * argv[])
 	GUIBackend backend;
 	GUISettings settings;
 	kdb::tools::merging::MergingKDB kdb;
-	TreeViewModel treeModel (&kdb);
+//	TreeViewModel treeModel (&kdb);
+	TreeModel treeModelDup (&kdb);
 
-	engine.setObjectOwnership (&treeModel, QQmlApplicationEngine::CppOwnership);
+//	engine.setObjectOwnership (&treeModel, QQmlApplicationEngine::CppOwnership);
 
 	ctxt->setContextProperty ("undoManager", &manager);
-	ctxt->setContextProperty ("externTreeModel", &treeModel);
+//	ctxt->setContextProperty ("externTreeModel", &treeModel);
+	ctxt->setContextProperty ("treeModelDup", &treeModelDup);
 	ctxt->setContextProperty ("guiBackend", &backend);
 	ctxt->setContextProperty ("guiSettings", &settings);
 
-	try
-	{
-		treeModel.populateModel ();
-	}
-	catch (std::exception const & e)
-	{
-		QMessageBox msgBox;
-		msgBox.setText ("Could not start qt-gui. Failed while reading the whole configuration.");
-		msgBox.setInformativeText (e.what ());
-		msgBox.setIcon (QMessageBox::Critical);
-		msgBox.exec ();
-		return 1;
-	}
+//	try
+//	{
+//		treeModel.populateModel ();
+//	}
+//	catch (std::exception const & e)
+//	{
+//		QMessageBox msgBox;
+//		msgBox.setText ("Could not start qt-gui. Failed while reading the whole configuration.");
+//		msgBox.setInformativeText (e.what ());
+//		msgBox.setIcon (QMessageBox::Critical);
+//		msgBox.exec ();
+//		return 1;
+//	}
 
 	engine.load (QUrl (QStringLiteral ("qrc:/qml/main.qml")));
 
